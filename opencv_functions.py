@@ -9,7 +9,7 @@ pytesseract.pytesseract.tesseract_cmd = '/usr/local/Cellar/tesseract/3.05.02/bin
 def save_photo_text():
     # Read image from which text needs to be extracted 
     # convert to array of ints
-    path = 'image.png'
+    path = 'noisy_image.jpg'
     img = cv2.imread(path)
     # nparr = np.frombuffer(photo, np.uint8)
     # convert to image array
@@ -24,18 +24,17 @@ def save_photo_text():
     
     # Specify structure shape and kernel size.  
     # Kernel size increases or decreases the area  
-    # of the rectangle to be detected. 
-    # A smaller value like (10, 10) will detect  
-    # each word instead of a sentence. 
-    rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (18, 18)) 
+    # of the rectangle of pixels to be detected. 
+    rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (6, 6)) 
     
     # Appplying dilation on the threshold image 
-    dilation = cv2.dilate(thresh1, rect_kernel, iterations = 1) 
-    
+    dilation = cv2.morphologyEx(thresh1, cv2.MORPH_CLOSE, rect_kernel)
+    # dilation = cv2.dilate(closing, rect_kernel, iterations = 1) 
+
     # Finding contours 
     contours, hierarchy = cv2.findContours(dilation, cv2.RETR_EXTERNAL,  
                                                     cv2.CHAIN_APPROX_NONE) 
-    print("contours", contours)
+    # print("contours", contours)
     # Creating a copy of image 
     im2 = img.copy() 
     
@@ -45,7 +44,7 @@ def save_photo_text():
     file.close() 
     
     # Looping through the identified contours 
-    # Then rectangular part is cropped and passed on 
+    # Then bounding rectangle is cropped and passed on 
     # to pytesseract for extracting text from it 
     # Extracted text is then written into the text file 
     for cnt in contours: 
@@ -69,5 +68,13 @@ def save_photo_text():
         
         # Close the file 
         file.close 
+    
+    # cv2.imwrite("dilated_noisy_5.png", dilation)
+    # cv2.imwrite("image_rectangles_dilation_5.png", rect)
+
+    cv2.imshow("Image with contours", rect)
+    cv2.imshow("Dilated Image", dilation)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 save_photo_text()
