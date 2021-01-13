@@ -4,12 +4,12 @@ import numpy as np
 import pytesseract 
   
 # Mention the installed location of Tesseract-OCR in your system 
-pytesseract.pytesseract.tesseract_cmd = '/usr/local/Cellar/tesseract/3.05.02/bin/tesseract'
+pytesseract.pytesseract.tesseract_cmd = '/usr/local/Cellar/tesseract/4.1.1/bin/tesseract'
 
 def save_photo_text():
     # Read image from which text needs to be extracted 
     # convert to array of ints
-    path = 'images/coinex_kr.jpg'
+    path = 'images/sign.jpg'
     img = cv2.imread(path)
     # nparr = np.frombuffer(photo, np.uint8)
     # convert to image array
@@ -27,56 +27,57 @@ def save_photo_text():
     # Specify structure shape and kernel size. 
     # Kernel size increases or decreases the area  
     # of the rectangle of pixels to be detected. 
-    rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)) 
+    rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 25)) 
     
     # Applying dilation on the threshold image 
     # Using a Closing to erode after dilation
-    dilation = cv2.morphologyEx(thresh1, cv2.MORPH_CLOSE, rect_kernel)
-
+    # dilation = cv2.morphologyEx(thresh1, cv2.MORPH_CLOSE, rect_kernel)
+    dilation = cv2.dilate(thresh1, rect_kernel, iterations = 1) 
+    
     # Finding contours 
     contours, hierarchy = cv2.findContours(dilation, cv2.RETR_EXTERNAL,  
-                                                    cv2.CHAIN_APPROX_NONE) 
+                                                    cv2.CHAIN_APPROX_SIMPLE) 
     # print("contours", contours)
     # Creating a copy of image 
     im2 = img.copy() 
     
-    # # A text file is created and flushed 
-    # file = open("recognized.txt", "w+") 
-    # file.write("")  
-    # file.close() 
+    # A text file is created and flushed 
+    file = open("recognized.txt", "w+") 
+    file.write("")  
+    file.close() 
     
     # Looping through the identified contours 
     # Then bounding rectangle is cropped and passed on 
     # to pytesseract for extracting text from it 
     # Extracted text is then written into the text file 
-    for cnt in contours: 
+    for cnt in reversed(contours): 
         x, y, w, h = cv2.boundingRect(cnt) 
         
         # Drawing a rectangle on copied image 
         rect = cv2.rectangle(im2, (x, y), (x + w, y + h), (0, 255, 0), 2) 
         
-        # # Cropping the text block for giving input to OCR 
-        # cropped = im2[y:y + h, x:x + w] 
+        # Cropping the text block for giving input to OCR 
+        cropped = im2[y:y + h, x:x + w] 
         
-        # # Open the file in append mode 
-        # file = open("recognized.txt", "a") 
+        # Open the file in append mode 
+        file = open("recognized.txt", "a") 
         
-        # # Apply OCR on the cropped image 
-        # text = pytesseract.image_to_string(cropped, lang='eng') 
+        # Apply OCR on the cropped image 
+        text = pytesseract.image_to_string(cropped, lang='eng') 
         
-        # # Appending the text into file 
-        # file.write(text) 
-        # file.write("\n") 
+        # Appending the text into file 
+        file.write(text) 
+        file.write("\n") 
         
-        # # Close the file 
-        # file.close 
+        # Close the file 
+        file.close 
     
-    # cv2.imwrite("dilated_noisy_5.png", dilation)
-    # cv2.imwrite("image_rectangles_dilation_5.png", rect)
-
     cv2.imshow("Image with contours", rect)
     cv2.imshow("Dilated Image", dilation)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+    # cv2.imwrite("dilated_noisy_5.png", dilation)
+    # cv2.imwrite("image_rectangles_dilation_5.png", rect)
+
 
 save_photo_text()
