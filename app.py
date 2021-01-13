@@ -9,9 +9,12 @@ app = Flask(__name__)
 @app.route("/photo", methods=["POST"])
 def getTextFromPhoto():
     if request.method=='POST':
-        # return "Hello from Photo"
         posted_data = request.get_data()
-        save_photo_text(posted_data)
+        # data = posted_data['data']
+        print(posted_data)
+        # return "Hello from Photo"
+        # posted_data = request.get_data()
+        # save_photo_text(posted_data)
         # data = posted_data['data']
         # print(request.get_data())
 
